@@ -1,6 +1,7 @@
 package com.akshayaschool.akshaya_school_backend.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -79,6 +80,21 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDatabaseConstraint(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        ApiErrorResponse error = new ApiErrorResponse();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.CONFLICT.value());
+        error.setError("DATABASE_CONSTRAINT_VIOLATION");
+        error.setMessage("Duplicate or invalid data detected");
+        error.setPath(request.getRequestURI());
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
