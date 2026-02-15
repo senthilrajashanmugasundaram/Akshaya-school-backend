@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "academic_year")
 @Getter @Setter
-public class AcademicYearEntity {
+public class AcademicYearEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
