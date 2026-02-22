@@ -14,7 +14,9 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
 management:
   endpoints:
     web:
