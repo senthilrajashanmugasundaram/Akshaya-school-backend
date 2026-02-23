@@ -6,6 +6,7 @@ import com.akshayaschool.akshaya_school_backend.academic.Repository.AdminUserRep
 import com.akshayaschool.akshaya_school_backend.auth.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +34,10 @@ public class AuthController {
         if (!encoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
+        //UserDetails userDetails =
+             //   userDetailsService.loadUserByUsername(loginRequest.getUsername());
 
+       // String token = jwtUtil.generateToken(userDetails);
         String token = jwtUtil.generateToken(user.getUsername());
 
         return ResponseEntity.ok(Map.of("token", token));
