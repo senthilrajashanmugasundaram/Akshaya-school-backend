@@ -3,6 +3,7 @@ package com.akshayaschool.akshaya_school_backend.auth;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -21,11 +22,15 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
+
+
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
+
     // ✅ Generate token using username
     public String generateToken(String username) {
+        System.out.println("Secret Key: " + secretKey);
 
         return Jwts.builder()
                 .setSubject(username)
@@ -41,11 +46,12 @@ public class JwtUtil {
     }
 
     // ✅ Validate token using username
-    public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username)
-                && !isTokenExpired(token));
+    public boolean validateToken(String token, UserDetails userDetails) {
+        System.out.println("Secret Key: " + secretKey);
+        final String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
