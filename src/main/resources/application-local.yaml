@@ -5,5 +5,5 @@ spring:
     password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 jwt:
-  secret: mySuperSecretKeyForJwtMustBeAtLeast32CharsMoreforthisproblem!!
+  secret: YWtzYXlhLXNjaG9vbC1iYWNrZW5kLXNlY3JldC0yMDI2LXByb2R1Y3Rpb24=
   expiration: 86400000
