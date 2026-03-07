@@ -5,27 +5,35 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "academic_year")
-@Getter @Setter
-public class AcademicYearEntity extends BaseEntity {
+@Table(
+        name = "academic_year",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"name"})
+        }
+)
+@Getter
+@Setter
+public class AcademicYearEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    private String createdBy;
+    private String updatedBy;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
-
-

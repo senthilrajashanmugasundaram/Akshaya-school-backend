@@ -11,10 +11,14 @@ import com.akshayaschool.akshaya_school_backend.common.exception.DuplicateResour
 import com.akshayaschool.akshaya_school_backend.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ClassServiceImpl implements ClassService {
 
@@ -24,19 +28,42 @@ public class ClassServiceImpl implements ClassService {
     @Override
     public ClassResponse create(ClassRequest request) {
 
-        AcademicYearEntity year = academicYearRepository.findById(request.getAcademicYearId())
-                .orElseThrow(() -> new ResourceNotFoundException("Academic Year not found"));
+        Optional<ClassEntity> existing =
+                classRepository.findByNameAndAcademicYearId(
+                        request.getName(),
+                        request.getAcademicYearId()
+                );
 
-        if (classRepository.existsByNameAndAcademicYearId(
-                request.getName(), request.getAcademicYearId())) {
-            throw new DuplicateResourceException("Class already exists for this Academic Year");
+        if (existing.isPresent()) {
+
+            ClassEntity entity = existing.get();
+
+            if (entity.getIsActive()) {
+                throw new DuplicateResourceException(
+                        "Class already exists for this Academic Year"
+                );
+            }
+
+            // 🔥 Reactivate instead of creating new row
+            entity.setIsActive(true);
+            classRepository.save(entity);
+
+            return mapToResponse(entity);
         }
 
-        ClassEntity entity = new ClassEntity();
-        entity.setName(request.getName());
-        entity.setAcademicYear(year);
+        // 🔥 Create new only if no row exists at all
+        ClassEntity newClass = new ClassEntity();
+        newClass.setName(request.getName());
+        newClass.setAcademicYearId(request.getAcademicYearId());
+        newClass.setIsActive(true);
+        newClass.setCreatedBy("SYSTEM");
+        newClass.setUpdatedBy("SYSTEM");
+        newClass.setCreatedAt(LocalDateTime.now());
+        newClass.setUpdatedAt(LocalDateTime.now());
 
-        return mapToResponse(classRepository.save(entity));
+        classRepository.save(newClass);
+
+        return mapToResponse(newClass);
     }
 
     @Override
@@ -104,7 +131,7 @@ public class ClassServiceImpl implements ClassService {
         ClassResponse response = new ClassResponse();
         response.setId(entity.getId());
         response.setName(entity.getName());
-        response.setAcademicYearId(entity.getAcademicYear().getId());
+        response.setAcademicYearId(entity.getAcademicYearId());
         return response;
     }
 }
