@@ -14,7 +14,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://akshaya-admin.onrender.com"
+                "https://akshaya-school-frontend.onrender.com"
         ));
 
         configuration.setAllowedMethods(List.of(
