@@ -2,6 +2,7 @@ package com.akshayaschool.akshaya_school_backend.academic.Controller;
 
 import com.akshayaschool.akshaya_school_backend.academic.DTO.AcademicYearRequest;
 import com.akshayaschool.akshaya_school_backend.academic.DTO.AcademicYearResponse;
+import com.akshayaschool.akshaya_school_backend.academic.DTO.ClassResponse;
 import com.akshayaschool.akshaya_school_backend.academic.Entity.AcademicYearEntity;
 import com.akshayaschool.akshaya_school_backend.academic.Repository.AcademicYearRepository;
 import com.akshayaschool.akshaya_school_backend.academic.service.AcademicYearService;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/academic-years")
 @RequiredArgsConstructor
-@Tag(name = "Academic Master")
+@Tag(name = "Academic Year Master")
 public class AcademicYearController {
 
     private final AcademicYearService service;
@@ -29,6 +30,12 @@ public class AcademicYearController {
     @GetMapping
     public ResponseEntity<List<AcademicYearResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
 

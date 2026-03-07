@@ -6,51 +6,97 @@ import com.akshayaschool.akshaya_school_backend.academic.Entity.AcademicYearEnti
 import com.akshayaschool.akshaya_school_backend.academic.Repository.AcademicYearRepository;
 import com.akshayaschool.akshaya_school_backend.academic.service.AcademicYearService;
 import com.akshayaschool.akshaya_school_backend.common.exception.DuplicateResourceException;
+import com.akshayaschool.akshaya_school_backend.common.exception.ResourceNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AcademicYearServiceImpl implements AcademicYearService {
+@Transactional
+public class AcademicYearServiceImpl
+        implements AcademicYearService {
 
     private final AcademicYearRepository repository;
 
     @Override
-    public AcademicYearResponse create(AcademicYearRequest request) {
+    public AcademicYearResponse create(
+            AcademicYearRequest request) {
 
-        if (repository.existsByName(request.getName())) {
-            throw new DuplicateResourceException("Academic Year already exists");
+        Optional<AcademicYearEntity> existing =
+                repository.findByName(request.getName());
+
+        if (existing.isPresent()) {
+
+            AcademicYearEntity entity = existing.get();
+
+            if (Boolean.TRUE.equals(entity.getIsActive())) {
+                throw new DuplicateResourceException(
+                        "Academic Year already exists"
+                );
+            }
+
+            // 🔥 Restore
+            entity.setIsActive(true);
+            entity.setUpdatedAt(LocalDateTime.now());
+            entity.setUpdatedBy("SYSTEM");
+
+            repository.save(entity);
+
+            return map(entity);
         }
 
-        AcademicYearEntity entity = new AcademicYearEntity();
-        entity.setName(request.getName());
-        entity.setStartDate(request.getStartDate());
-        entity.setEndDate(request.getEndDate());
+        AcademicYearEntity year = new AcademicYearEntity();
+        year.setName(request.getName());
+        year.setStartDate(request.getStartDate());
+        year.setEndDate(request.getEndDate());
+        year.setIsActive(true);
+        year.setCreatedAt(LocalDateTime.now());
+        year.setUpdatedAt(LocalDateTime.now());
+        year.setCreatedBy("SYSTEM");
+        year.setUpdatedBy("SYSTEM");
 
-        AcademicYearEntity saved = repository.save(entity);
+        repository.save(year);
 
-        AcademicYearResponse response = new AcademicYearResponse();
-        response.setId(saved.getId());
-        response.setName(saved.getName());
-        response.setIsActive(saved.getIsActive());
-
-        return response;
+        return map(year);
     }
 
     @Override
     public List<AcademicYearResponse> getAll() {
-        return repository.findAll()
+
+        return repository.findByIsActiveTrue()
                 .stream()
-                .map(e -> {
-                    AcademicYearResponse r = new AcademicYearResponse();
-                    r.setId(e.getId());
-                    r.setName(e.getName());
-                    r.setIsActive(e.getIsActive());
-                    return r;
-                })
+                .map(this::map)
                 .toList();
+    }
+
+    @Override
+    public void delete(Long id) {
+
+        AcademicYearEntity entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Academic Year not found"));
+
+        entity.setIsActive(false);
+        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setUpdatedBy("SYSTEM");
+
+        repository.save(entity);
+    }
+
+    private AcademicYearResponse map(AcademicYearEntity entity) {
+
+        AcademicYearResponse res = new AcademicYearResponse();
+        res.setId(entity.getId());
+        res.setName(entity.getName());
+        res.setStartDate(entity.getStartDate());
+        res.setEndDate(entity.getEndDate());
+
+        return res;
     }
 }
 
